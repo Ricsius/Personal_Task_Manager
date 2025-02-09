@@ -1,5 +1,4 @@
-import { Component, signal } from '@angular/core';
-
+import { Component, computed, signal } from '@angular/core';
 import { TaskItemComponent } from './task-item/task-item.component';
 import { TasksService } from '../tasks.service';
 
@@ -11,8 +10,19 @@ import { TasksService } from '../tasks.service';
   imports: [TaskItemComponent],
 })
 export class TasksListComponent {
-  selectedFilter = signal<string>('all');
-  tasks = this.tasksService.allTasks;
+  private selectedFilter = signal<string>('all');
+  tasks = computed(() => {
+    switch (this.selectedFilter()) {
+      case 'open':
+        return this.tasksService.allTasks().filter(t => t.status === 'OPEN');
+      case 'in-progress':
+        return this.tasksService.allTasks().filter(t => t.status === 'IN_PROGRESS');
+      case 'done':
+        return this.tasksService.allTasks().filter(t => t.status === 'DONE');
+      default:
+        return this.tasksService.allTasks();
+    }
+  });
 
   constructor(private tasksService: TasksService) {}
 
